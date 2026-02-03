@@ -31,7 +31,7 @@ export async function updateProfile(prevState: unknown, formData: FormData) {
     // const targetBurn = formData.get('target_burn'); ...
 
     await updateUserProfile(updates);
-    revalidatePathsAndDashboard(['/profile', '/body', '/'], getTodayDateString());
+    await revalidatePathsAndDashboard(['/profile', '/body', '/'], getTodayDateString());
 
     return { message: '更新成功' };
 }

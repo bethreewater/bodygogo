@@ -33,7 +33,7 @@ export { signout as signOut }; // Re-export from auth.ts for backwards compatibi
 
 export async function updateProfile(data: Partial<UserProfile>) {
     await updateUserProfile(data);
-    revalidatePathsAndDashboard(['/profile', '/community'], getTodayDateString());
+    await revalidatePathsAndDashboard(['/profile', '/community'], getTodayDateString());
     return { success: true };
 }
 
@@ -42,7 +42,7 @@ export async function resetAccount() {
 
     // Aggressively revalidate all paths to clear Data Cache
     revalidatePath('/', 'layout'); // Clears everything under root
-    revalidatePathsAndDashboard(['/', '/profile', '/body', '/community', '/food', '/workout'], getTodayDateString());
+    await revalidatePathsAndDashboard(['/', '/profile', '/body', '/community', '/food', '/workout'], getTodayDateString());
 
     return { success: true };
 }

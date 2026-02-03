@@ -1,4 +1,5 @@
 import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import {
     getUserProfile,
     getLastGameState,
@@ -10,6 +11,8 @@ import {
 } from './data/supabase-repository';
 import { getDashboardViewModel, getDailyLogs } from './algorithms/brain';
 import { getCommunityFeed } from './algorithms/community';
+import { getViewerId } from './data/supabase-repository';
+import { dashboardTagForDate, dailyLogsTagForDate } from './server/cache-tags';
 
 /**
  * React 18 Cache Layer
@@ -26,11 +29,23 @@ export const getCachedGameStateBefore = cache((date: string) => getGameStateBefo
 
 // Dashboard (Heavy query)
 export const getCachedDashboard = cache(async (date: string) => {
-    return await getDashboardViewModel(date);
+    const uid = await getViewerId();
+    const cached = unstable_cache(
+        () => getDashboardViewModel(date),
+        ['dashboard', uid ?? 'anon', date],
+        { revalidate: 30, tags: [dashboardTagForDate(uid, date)] }
+    );
+    return cached();
 });
 
 export const getCachedDailyLogs = cache(async (date: string) => {
-    return await getDailyLogs(date);
+    const uid = await getViewerId();
+    const cached = unstable_cache(
+        () => getDailyLogs(date),
+        ['dailylogs', uid ?? 'anon', date],
+        { revalidate: 30, tags: [dailyLogsTagForDate(uid, date)] }
+    );
+    return cached();
 });
 
 // History Data

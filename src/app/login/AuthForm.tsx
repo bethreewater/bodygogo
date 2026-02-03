@@ -14,64 +14,57 @@ export function AuthForm() {
     };
 
     return (
-        <div style={{
-            background: 'var(--bg-card)',
-            padding: '2rem',
-            borderRadius: 'var(--radius-lg)',
-            boxShadow: 'var(--shadow-soft)',
-            width: '100%',
-            maxWidth: '400px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1.5rem',
-            animation: 'slideUp 0.5s ease-out'
-        }}>
-            <div style={{ textAlign: 'center' }}>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
-                    {isLogin ? '歡迎回來' : '建立帳號'}
-                </h2>
-                <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                    {isLogin ? '繼續您的健康旅程' : '開始您的冒險'}
-                </p>
+        <div className="auth-card">
+            <div className="auth-header">
+                <div>
+                    <h2>{isLogin ? '歡迎回來' : '建立帳號'}</h2>
+                    <p>{isLogin ? '繼續您的健康旅程' : '開始您的冒險'}</p>
+                </div>
+                <div className="auth-tabs">
+                    <button
+                        type="button"
+                        className={`auth-tab ${isLogin ? 'active' : ''}`}
+                        aria-pressed={isLogin}
+                        onClick={() => setIsLogin(true)}
+                    >
+                        登入
+                    </button>
+                    <button
+                        type="button"
+                        className={`auth-tab ${!isLogin ? 'active' : ''}`}
+                        aria-pressed={!isLogin}
+                        onClick={() => setIsLogin(false)}
+                    >
+                        註冊
+                    </button>
+                </div>
             </div>
 
             {isLogin ? (
-                <form action={loginAction} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>Email</label>
+                <form action={loginAction} className="auth-form">
+                    <div className="auth-field">
+                        <label>Email</label>
                         <input
                             name="email"
                             type="email"
                             required
                             placeholder="hero@bodygogo.com"
-                            style={{
-                                padding: '0.75rem',
-                                borderRadius: 'var(--radius-md)',
-                                border: '1px solid var(--border-light)',
-                                background: 'var(--bg-app)',
-                                fontSize: '1rem'
-                            }}
+                            className="auth-input"
                         />
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>Password</label>
+                    <div className="auth-field">
+                        <label>Password</label>
                         <input
                             name="password"
                             type="password"
                             required
                             placeholder="••••••••"
-                            style={{
-                                padding: '0.75rem',
-                                borderRadius: 'var(--radius-md)',
-                                border: '1px solid var(--border-light)',
-                                background: 'var(--bg-app)',
-                                fontSize: '1rem'
-                            }}
+                            className="auth-input"
                         />
                     </div>
 
                     {loginState?.error && (
-                        <div style={{ padding: '0.75rem', background: '#FEE2E2', color: '#B91C1C', borderRadius: 'var(--radius-md)', fontSize: '0.875rem' }}>
+                        <div className="auth-alert error">
                             {loginState.error}
                         </div>
                     )}
@@ -79,66 +72,42 @@ export function AuthForm() {
                     <button
                         type="submit"
                         disabled={isLoginPending}
-                        style={{
-                            marginTop: '0.5rem',
-                            padding: '0.75rem',
-                            borderRadius: 'var(--radius-full)',
-                            border: 'none',
-                            background: 'var(--primary)',
-                            color: 'white',
-                            fontWeight: 600,
-                            fontSize: '1rem',
-                            cursor: isLoginPending ? 'not-allowed' : 'pointer',
-                            opacity: isLoginPending ? 0.7 : 1,
-                            transition: 'all 0.2s'
-                        }}
+                        className="auth-button primary"
                     >
                         {isLoginPending ? '登入中...' : '登入'}
                     </button>
                 </form>
             ) : (
-                <form action={signupAction} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>Email</label>
+                <form action={signupAction} className="auth-form">
+                    <div className="auth-field">
+                        <label>Email</label>
                         <input
                             name="email"
                             type="email"
                             required
                             placeholder="hero@bodygogo.com"
-                            style={{
-                                padding: '0.75rem',
-                                borderRadius: 'var(--radius-md)',
-                                border: '1px solid var(--border-light)',
-                                background: 'var(--bg-app)',
-                                fontSize: '1rem'
-                            }}
+                            className="auth-input"
                         />
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>Password</label>
+                    <div className="auth-field">
+                        <label>Password</label>
                         <input
                             name="password"
                             type="password"
                             required
                             placeholder="••••••••"
                             minLength={6}
-                            style={{
-                                padding: '0.75rem',
-                                borderRadius: 'var(--radius-md)',
-                                border: '1px solid var(--border-light)',
-                                background: 'var(--bg-app)',
-                                fontSize: '1rem'
-                            }}
+                            className="auth-input"
                         />
                     </div>
 
                     {signupState?.error && (
-                        <div style={{ padding: '0.75rem', background: '#FEE2E2', color: '#B91C1C', borderRadius: 'var(--radius-md)', fontSize: '0.875rem' }}>
+                        <div className="auth-alert error">
                             {signupState.error}
                         </div>
                     )}
                     {signupState?.success && (
-                        <div style={{ padding: '0.75rem', background: '#DCFCE7', color: '#15803D', borderRadius: 'var(--radius-md)', fontSize: '0.875rem' }}>
+                        <div className="auth-alert success">
                             {signupState.message}
                         </div>
                     )}
@@ -146,39 +115,21 @@ export function AuthForm() {
                     <button
                         type="submit"
                         disabled={isSignupPending}
-                        style={{
-                            marginTop: '0.5rem',
-                            padding: '0.75rem',
-                            borderRadius: 'var(--radius-full)',
-                            border: 'none',
-                            background: 'var(--accent)',
-                            color: 'white',
-                            fontWeight: 600,
-                            fontSize: '1rem',
-                            cursor: isSignupPending ? 'not-allowed' : 'pointer',
-                            opacity: isSignupPending ? 0.7 : 1,
-                            transition: 'all 0.2s'
-                        }}
+                        className="auth-button accent"
                     >
                         {isSignupPending ? '註冊中...' : '註冊帳號'}
                     </button>
                 </form>
             )}
 
-            <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
+            <div className="auth-footer">
                 <button
                     onClick={toggleMode}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--text-secondary)',
-                        fontSize: '0.875rem',
-                        cursor: 'pointer',
-                        textDecoration: 'underline'
-                    }}
+                    className="auth-toggle"
                 >
                     {isLogin ? '還沒有帳號？ 按此註冊' : '已經有帳號？ 按此登入'}
                 </button>
+                <p className="auth-hint">登入或註冊代表你同意我們的資料與隱私規範。</p>
             </div>
         </div>
     );

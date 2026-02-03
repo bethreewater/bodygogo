@@ -70,7 +70,7 @@ export async function submitWeight(prevState: unknown, formData: FormData) {
     }
 
     // Critical: This tells Next.js to re-run the Page Component (and thus the Brain)
-    revalidatePathsAndDashboard(['/', '/body', '/profile'], dateString); // Weight changes profile stats
+    await revalidatePathsAndDashboard(['/', '/body', '/profile'], dateString); // Weight changes profile stats
 
     return { message: '記錄成功！' };
 }
@@ -105,7 +105,7 @@ export async function submitFood(prevState: unknown, formData: FormData) {
         carbs_g: carbs
     });
 
-    revalidatePathsAndDashboard(['/', '/food', '/body'], dateString); // Calories affect body stats
+    await revalidatePathsAndDashboard(['/', '/food', '/body'], dateString); // Calories affect body stats
     return { message: 'Food logged' };
 }
 
@@ -152,6 +152,6 @@ export async function submitWorkout(prevState: unknown, formData: FormData) {
         exercises: exercises
     });
 
-    revalidatePathsAndDashboard(['/', '/workout', '/body'], dateString);
+    await revalidatePathsAndDashboard(['/', '/workout', '/body'], dateString);
     return { message: 'Workout logged' };
 }

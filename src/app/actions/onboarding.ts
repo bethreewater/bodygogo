@@ -43,7 +43,7 @@ export async function completeOnboarding(prevState: unknown, formData: FormData)
             source: 'user'
         });
 
-        revalidatePathsAndDashboard(['/'], now.split('T')[0]);
+        await revalidatePathsAndDashboard(['/'], now.split('T')[0]);
         return { success: true };
     } catch (e: unknown) {
         console.error('Onboarding Error', e);

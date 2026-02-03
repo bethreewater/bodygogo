@@ -57,7 +57,7 @@ export async function seedCommunityAction() {
         xp_next_level: 100
     }, { onConflict: 'uid, date' });
 
-    revalidatePathsAndDashboard(['/community', '/'], getTodayDateString()); // Home might show community preview?
+    await revalidatePathsAndDashboard(['/community', '/'], getTodayDateString()); // Home might show community preview?
 
     return { success: true };
 }

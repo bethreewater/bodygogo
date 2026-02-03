@@ -20,6 +20,12 @@ type GameStateRow = {
 type UserRow = { uid: string; avatar_config?: UserProfile['avatar_config'] };
 type PrivacyRow = { uid: string; privacy: 'public' | 'private' | null };
 
+export async function getViewerId(): Promise<string | null> {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    return user?.id ?? null;
+}
+
 async function ensureUserRow(supabase: SupabaseClient, uid: string) {
     const { error } = await supabase
         .from('users')
