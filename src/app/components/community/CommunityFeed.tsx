@@ -7,6 +7,7 @@ import { FeedItem } from '@/lib/core/types';
 import { FeedItemCard } from './FeedItemCard';
 import { seedCommunityAction } from '@/app/actions/community';
 import { PrivacyBadge } from '@/app/components/PrivacyBadge';
+import { invalidateClientCache } from '@/lib/client-cache';
 
 interface CommunityFeedProps {
     items: FeedItem[];
@@ -23,7 +24,8 @@ export function CommunityFeed({ items, currentUserId, currentPrivacy }: Communit
         setIsSeeding(true);
         try {
             await seedCommunityAction();
-            router.refresh(); // Refresh to show new data
+            invalidateClientCache();
+            router.refresh(); // Preserve server refresh for layout/theme
         } catch (error) {
             console.error('Seeding failed', error);
         } finally {

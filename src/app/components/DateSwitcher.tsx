@@ -1,11 +1,12 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 
 export function DateSwitcher({ currentDate }: { currentDate: string }) {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const pathname = usePathname();
 
     const handleDateChange = (days: number) => {
         const date = new Date(currentDate);
@@ -16,7 +17,7 @@ export function DateSwitcher({ currentDate }: { currentDate: string }) {
 
         const params = new URLSearchParams(searchParams);
         params.set('date', nextDateStr);
-        router.push(`/?${params.toString()}`);
+        router.push(`${pathname}?${params.toString()}`);
     };
 
     const displayDate = new Date(currentDate).toLocaleDateString('en-US', {

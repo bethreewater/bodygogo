@@ -1,31 +1,47 @@
-import { getCachedDashboard, getCachedDailyLogs } from '@/lib/cache';
+'use client';
+
+import { useSearchParams } from 'next/navigation';
+import { useClientJson } from '@/lib/client-cache';
+import { PageLoading } from './components/PageLoading';
 import { LevelProgress } from './components/LevelProgress';
 import { DashboardActions } from './components/DashboardActions';
-
 import { DashboardInteractions } from './components/DashboardInteractions';
 import { UserIcon } from './components/icons/UserIcon';
 import { SettingsIcon } from './components/icons/SettingsIcon';
 import { GoalCountdown } from './components/GoalCountdown';
 import Link from 'next/link';
+import type { DashboardViewModel, BodyLog, FoodLog, WorkoutLog } from '@/lib/core/types';
 
-// Cache for 30 seconds
-export const revalidate = 30;
+type HomePayload = {
+  viewModel: DashboardViewModel;
+  logs: {
+    body: BodyLog[];
+    food: FoodLog[];
+    workout: WorkoutLog[];
+    latestWeight: BodyLog | null;
+  };
+};
 
-export default async function DashboardHome({
-  searchParams,
-}: {
-  searchParams: Promise<{ date?: string }>;
-}) {
-  const params = await searchParams;
+export default function DashboardHome() {
+  const searchParams = useSearchParams();
   const today = new Date().toISOString().split('T')[0];
-  const selectedDate = params.date || today;
+  const selectedDate = searchParams.get('date') || today;
 
-  // OPTIMIZATION: Parallel fetch with React Cache
-  const [viewModel, logs] = await Promise.all([
-    getCachedDashboard(selectedDate),
-    getCachedDailyLogs(selectedDate)
-  ]);
+  const { data, loading, error } = useClientJson<HomePayload>(`/api/home?date=${selectedDate}`);
 
+  if (loading) {
+    return <PageLoading title="載入首頁中..." />;
+  }
+
+  if (!data || error) {
+    return (
+      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '2rem 1.5rem' }}>
+        <p style={{ color: 'var(--text-secondary)' }}>載入失敗，請稍後再試。</p>
+      </div>
+    );
+  }
+
+  const { viewModel, logs } = data;
   const { metrics } = viewModel;
 
   // Level Data
@@ -39,11 +55,9 @@ export default async function DashboardHome({
   const dateMonthStr = new Intl.DateTimeFormat('zh-TW', { month: 'long', day: 'numeric' }).format(dateObj);
   const dateWeekdayStr = new Intl.DateTimeFormat('zh-TW', { weekday: 'long' }).format(dateObj);
 
-
-
   return (
     <div style={{
-      maxWidth: '480px', // Mobile focused width
+      maxWidth: '480px',
       margin: '0 auto',
       padding: '2rem 1.5rem',
       paddingBottom: '8rem',
@@ -53,8 +67,6 @@ export default async function DashboardHome({
       background: 'var(--bg-app)',
       minHeight: '100vh'
     }}>
-
-
       {/* 1. Header Row */}
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
@@ -84,7 +96,6 @@ export default async function DashboardHome({
 
         {/* User / Settings Icons */}
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-
           <Link href="/profile" style={{ textDecoration: 'none' }} aria-label="個人檔案">
             <div className="premium-icon-btn">
               <UserIcon />
@@ -115,9 +126,6 @@ export default async function DashboardHome({
 
       {/* Floating Actions */}
       <DashboardActions />
-
     </div>
-
-
   );
 }

@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 export function Navigation() {
     const pathname = usePathname();
+    const router = useRouter();
 
     const isActive = (path: string) => {
         if (path === '/') return pathname === '/';
@@ -40,7 +41,13 @@ export function Navigation() {
                 const active = isActive(item.path);
 
                 return (
-                    <Link key={item.path} href={item.path} style={{
+                    <Link
+                        key={item.path}
+                        href={item.path}
+                        prefetch
+                        onMouseEnter={() => router.prefetch(item.path)}
+                        onFocus={() => router.prefetch(item.path)}
+                        style={{
                         position: 'relative',
                         padding: '0.5rem 1rem',
                         color: active ? 'var(--text-primary)' : 'var(--text-tertiary)',

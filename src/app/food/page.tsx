@@ -1,27 +1,46 @@
-import { getCachedDashboard, getCachedDailyLogs, getCachedFoodHistory } from '@/lib/cache';
+'use client';
+
 import { NutritionSummary } from '@/app/components/NutritionSummary';
 import { FoodEntryForm, HistoryList } from '@/app/components/Forms';
 import { DateSwitcher } from '@/app/components/DateSwitcher';
 import { WeeklyBarChart } from '@/app/components/WeeklyBarChart';
 
-export const revalidate = 30;
+import { useSearchParams } from 'next/navigation';
+import { useClientJson } from '@/lib/client-cache';
+import { PageLoading } from '@/app/components/PageLoading';
+import type { DashboardViewModel, BodyLog, FoodLog, WorkoutLog } from '@/lib/core/types';
 
-export default async function FoodPage({
-    searchParams,
-}: {
-    searchParams: Promise<{ date?: string }>;
-}) {
-    const params = await searchParams;
+type FoodPayload = {
+    viewModel: DashboardViewModel;
+    logs: {
+        body: BodyLog[];
+        food: FoodLog[];
+        workout: WorkoutLog[];
+        latestWeight: BodyLog | null;
+    };
+    weeklyData: number[];
+};
+
+export default function FoodPage() {
+    const searchParams = useSearchParams();
     const today = new Date().toISOString().split('T')[0];
-    const selectedDate = params.date || today;
+    const selectedDate = searchParams.get('date') || today;
 
-    // OPTIMIZATION: Parallel fetch
-    const [viewModel, logs, weeklyData] = await Promise.all([
-        getCachedDashboard(selectedDate),
-        getCachedDailyLogs(selectedDate),
-        getCachedFoodHistory(7)
-    ]);
+    const { data, loading, error } = useClientJson<FoodPayload>(`/api/food?date=${selectedDate}`);
 
+    if (loading) {
+        return <PageLoading title="載入飲食紀錄中..." />;
+    }
+
+    if (!data || error) {
+        return (
+            <div style={{ maxWidth: '640px', margin: '0 auto', padding: '2rem' }}>
+                <p style={{ color: 'var(--text-secondary)' }}>載入失敗，請稍後再試。</p>
+            </div>
+        );
+    }
+
+    const { viewModel, logs, weeklyData } = data;
     const { metrics, targets, date } = viewModel;
 
     const totalIntake = metrics.calories_in.status === 'ready' ? (metrics.calories_in.value || 0) : 0;

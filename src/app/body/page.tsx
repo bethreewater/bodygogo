@@ -1,28 +1,46 @@
 
-import { getCachedDashboard, getCachedDailyLogs, getCachedWeightTrend } from '@/lib/cache';
+'use client';
+
 import { WeightEntryForm, HistoryList } from '@/app/components/Forms';
 import { DateSwitcher } from '@/app/components/DateSwitcher';
 import { BodyMetricsGrid } from './BodyMetricsGrid';
 import { GoalTimelineCard } from '@/app/components/GoalTimelineCard';
+import { useSearchParams } from 'next/navigation';
+import { useClientJson } from '@/lib/client-cache';
+import { PageLoading } from '@/app/components/PageLoading';
+import type { DashboardViewModel, BodyLog, FoodLog, WorkoutLog } from '@/lib/core/types';
 
-export const revalidate = 30;
+type BodyPayload = {
+    viewModel: DashboardViewModel;
+    logs: {
+        body: BodyLog[];
+        food: FoodLog[];
+        workout: WorkoutLog[];
+        latestWeight: BodyLog | null;
+    };
+    weightTrend: number[];
+};
 
-export default async function BodyPage({
-    searchParams,
-}: {
-    searchParams: Promise<{ date?: string }>;
-}) {
-    const params = await searchParams;
+export default function BodyPage() {
+    const searchParams = useSearchParams();
     const today = new Date().toISOString().split('T')[0];
-    const selectedDate = params.date || today;
+    const selectedDate = searchParams.get('date') || today;
 
-    // OPTIMIZATION: Parallel fetch
-    const [viewModel, logs, weightTrend] = await Promise.all([
-        getCachedDashboard(selectedDate),
-        getCachedDailyLogs(selectedDate),
-        getCachedWeightTrend(14)
-    ]);
+    const { data, loading, error } = useClientJson<BodyPayload>(`/api/body?date=${selectedDate}`);
 
+    if (loading) {
+        return <PageLoading title="載入身體數據中..." />;
+    }
+
+    if (!data || error) {
+        return (
+            <div style={{ maxWidth: '640px', margin: '0 auto', padding: '3rem 2rem' }}>
+                <p style={{ color: 'var(--text-secondary)' }}>載入失敗，請稍後再試。</p>
+            </div>
+        );
+    }
+
+    const { viewModel, logs, weightTrend } = data;
     const { metrics, date } = viewModel;
 
     const weight = metrics.weight.value;

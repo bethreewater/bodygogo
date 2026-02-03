@@ -1,9 +1,10 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { submitWeight, submitFood, submitWorkout } from '../actions/inputs';
 import { InputCard } from './InputCard';
 import type { BodyLog, FoodLog, WorkoutLog } from '@/lib/core/types';
+import { invalidateClientCache } from '@/lib/client-cache';
 
 /**
  * Client Components for User Input
@@ -41,6 +42,12 @@ const BUTTON_STYLE = {
 
 export function WeightEntryForm() {
     const [state, formAction, isPending] = useActionState(submitWeight, null);
+
+    useEffect(() => {
+        if (state?.message) {
+            invalidateClientCache();
+        }
+    }, [state?.message]);
 
     return (
         <InputCard title="記錄體重">
@@ -86,6 +93,12 @@ export function FoodEntryForm() {
     const [smartText, setSmartText] = useState('');
     const [name, setName] = useState('');
     const [macros, setMacros] = useState({ calories: '', protein: '', fat: '', carbs: '' });
+
+    useEffect(() => {
+        if (state?.message) {
+            invalidateClientCache();
+        }
+    }, [state?.message]);
 
     const handleAnalyze = async () => {
         if (!smartText.trim()) return;
@@ -246,6 +259,12 @@ export function WorkoutEntryForm() {
     const [duration, setDuration] = useState('');
     const [calories, setCalories] = useState('');
     const [exercises, setExercises] = useState<ExerciseSet[]>([{ name: '', weight_kg: 0, reps: 0, sets: 0 }]);
+
+    useEffect(() => {
+        if (state?.message) {
+            invalidateClientCache();
+        }
+    }, [state?.message]);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;

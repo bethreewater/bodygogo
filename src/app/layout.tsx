@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Navigation } from "./components/Navigation";
+import { RoutePrefetch } from "./components/RoutePrefetch";
 
 const inter = localFont({
   variable: "--font-sans",
@@ -38,6 +39,7 @@ export default async function RootLayout({
   return (
     <html lang="zh-TW" className={inter.variable} suppressHydrationWarning data-theme={theme}>
       <body>
+        <RoutePrefetch />
         {children}
         <Navigation />
       </body>

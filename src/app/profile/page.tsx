@@ -1,21 +1,35 @@
+'use client';
+
 import { ProfileEditableGrid } from './ProfileEditableGrid';
 import { ProfileHeader } from './ProfileHeader';
-import { getCachedProfile, getCachedGameState, getCachedDashboard } from '@/lib/cache';
 import Link from 'next/link';
+import { useClientJson } from '@/lib/client-cache';
+import { PageLoading } from '@/app/components/PageLoading';
+import type { DashboardViewModel, GameState, UserProfile } from '@/lib/core/types';
 
-// Profile is relatively static
-export const revalidate = 60;
+type ProfilePayload = {
+    profile: UserProfile | null;
+    gameState: GameState;
+    viewModel: DashboardViewModel;
+};
 
-export default async function ProfilePage() {
+export default function ProfilePage() {
     const today = new Date().toISOString().split('T')[0];
+    const { data, loading, error } = useClientJson<ProfilePayload>(`/api/profile?date=${today}`);
 
-    // OPTIMIZATION: Parallel fetch with cache
-    const [profile, gameState, viewModel] = await Promise.all([
-        getCachedProfile(),
-        getCachedGameState(today),
-        getCachedDashboard(today)
-    ]);
+    if (loading) {
+        return <PageLoading title="載入個人檔案中..." />;
+    }
 
+    if (!data || error) {
+        return (
+            <div style={{ maxWidth: '600px', margin: '0 auto', padding: '2rem' }}>
+                <p style={{ color: 'var(--text-secondary)' }}>載入失敗，請稍後再試。</p>
+            </div>
+        );
+    }
+
+    const { profile, gameState, viewModel } = data;
     const { metrics } = viewModel;
 
     if (!profile) {

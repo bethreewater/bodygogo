@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { UserProfile } from '@/lib/core/types'; // Assuming types are here
 import { QuickAddSheet } from '../components/QuickAddSheet';
 import { useActionState } from 'react'; // Or create a wrapper since useActionState is for forms
 import { updateProfile } from '../actions/profile';
+import { invalidateClientCache } from '@/lib/client-cache';
 
 // We'll use a wrapper form for the sheet content
 function EditForm({
@@ -23,6 +24,12 @@ function EditForm({
     nameOverride?: string
 }) {
     const [state, formAction, isPending] = useActionState(updateProfile, null);
+
+    useEffect(() => {
+        if (state?.message) {
+            invalidateClientCache();
+        }
+    }, [state?.message]);
 
     return (
         <form action={formAction} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingBottom: '2rem' }}>

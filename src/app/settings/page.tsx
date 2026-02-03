@@ -1,11 +1,31 @@
+'use client';
+
 import Link from 'next/link';
-import { getUserSettings } from '@/lib/data/supabase-repository';
 import { SettingsList } from './SettingsList';
 import { SignOutButton } from './SignOutButton';
 import { ResetButton } from './ResetButton';
+import { useClientJson } from '@/lib/client-cache';
+import { PageLoading } from '@/app/components/PageLoading';
+import type { UserSettings } from '@/lib/core/types';
 
-export default async function SettingsPage() {
-    const settings = await getUserSettings();
+type SettingsPayload = { settings: UserSettings };
+
+export default function SettingsPage() {
+    const { data, loading, error } = useClientJson<SettingsPayload>('/api/settings');
+
+    if (loading) {
+        return <PageLoading title="載入設定中..." />;
+    }
+
+    if (!data || error) {
+        return (
+            <div style={{ maxWidth: '600px', margin: '0 auto', padding: '2rem' }}>
+                <p style={{ color: 'var(--text-secondary)' }}>載入失敗，請稍後再試。</p>
+            </div>
+        );
+    }
+
+    const { settings } = data;
 
     return (
         <div style={{

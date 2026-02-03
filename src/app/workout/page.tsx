@@ -1,28 +1,45 @@
-import { getCachedDashboard, getCachedDailyLogs, getCachedWorkoutHistory } from '@/lib/cache';
+'use client';
+
 import { WorkoutEntryForm, HistoryList } from '@/app/components/Forms';
 import { WorkoutSummary } from '@/app/components/WorkoutSummary';
 import { DateSwitcher } from '@/app/components/DateSwitcher';
 import { WeeklyBarChart } from '@/app/components/WeeklyBarChart';
+import { useSearchParams } from 'next/navigation';
+import { useClientJson } from '@/lib/client-cache';
+import { PageLoading } from '@/app/components/PageLoading';
+import type { DashboardViewModel, BodyLog, FoodLog, WorkoutLog } from '@/lib/core/types';
 
-export const revalidate = 30;
+type WorkoutPayload = {
+    viewModel: DashboardViewModel;
+    logs: {
+        body: BodyLog[];
+        food: FoodLog[];
+        workout: WorkoutLog[];
+        latestWeight: BodyLog | null;
+    };
+    weeklyData: number[];
+};
 
-
-export default async function WorkoutPage({
-    searchParams,
-}: {
-    searchParams: Promise<{ date?: string }>;
-}) {
-    const params = await searchParams;
+export default function WorkoutPage() {
+    const searchParams = useSearchParams();
     const today = new Date().toISOString().split('T')[0];
-    const selectedDate = params.date || today;
+    const selectedDate = searchParams.get('date') || today;
 
-    // OPTIMIZATION: Parallel fetch
-    const [viewModel, logs, weeklyData] = await Promise.all([
-        getCachedDashboard(selectedDate),
-        getCachedDailyLogs(selectedDate),
-        getCachedWorkoutHistory(7)
-    ]);
+    const { data, loading, error } = useClientJson<WorkoutPayload>(`/api/workout?date=${selectedDate}`);
 
+    if (loading) {
+        return <PageLoading title="載入運動紀錄中..." />;
+    }
+
+    if (!data || error) {
+        return (
+            <div style={{ maxWidth: '640px', margin: '0 auto', padding: '3rem 2rem' }}>
+                <p style={{ color: 'var(--text-secondary)' }}>載入失敗，請稍後再試。</p>
+            </div>
+        );
+    }
+
+    const { viewModel, logs, weeklyData } = data;
     const { metrics, targets, date } = viewModel;
     const caloriesOut = metrics.calories_out.status === 'ready' ? metrics.calories_out.value : null;
 

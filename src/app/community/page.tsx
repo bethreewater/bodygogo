@@ -1,25 +1,38 @@
-import React from 'react';
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+'use client';
 
-import { getCachedCommunityFeed, getCachedProfile } from '@/lib/cache';
-import { getUserSettings } from '@/lib/data/supabase-repository';
 import { CommunityFeed } from '@/app/components/community/CommunityFeed';
 import Link from 'next/link';
 import { UserIcon } from '@/app/components/icons/UserIcon';
+import { useClientJson } from '@/lib/client-cache';
+import { PageLoading } from '@/app/components/PageLoading';
+import type { FeedItem, UserSettings } from '@/lib/core/types';
 
 /**
- * Community Page (Server Component)
+ * Community Page (Client Component)
  * Refactored to match 'Cozy Pixel' Design System (Mobile First Container)
  */
-export default async function CommunityPage() {
-    // 1. Fetch Data
-    const feedItems = await getCachedCommunityFeed();
+type CommunityPayload = {
+    items: FeedItem[];
+    currentUserId: string | null;
+    privacy: UserSettings['privacy'];
+};
 
-    // 2. Identify Current User
-    const profile = await getCachedProfile();
-    const settings = await getUserSettings();
-    const currentUserId = profile?.uid;
+export default function CommunityPage() {
+    const { data, loading, error } = useClientJson<CommunityPayload>('/api/community');
+
+    if (loading) {
+        return <PageLoading title="載入社群動態中..." />;
+    }
+
+    if (!data || error) {
+        return (
+            <main style={{ maxWidth: '480px', margin: '0 auto', padding: '2rem 1.5rem' }}>
+                <p style={{ color: 'var(--text-secondary)' }}>載入失敗，請稍後再試。</p>
+            </main>
+        );
+    }
+
+    const { items, currentUserId, privacy } = data;
 
     return (
         <main style={{
@@ -45,9 +58,9 @@ export default async function CommunityPage() {
             </header>
 
             <CommunityFeed
-                items={feedItems}
+                items={items}
                 currentUserId={currentUserId}
-                currentPrivacy={settings.privacy}
+                currentPrivacy={privacy}
             />
         </main>
     );

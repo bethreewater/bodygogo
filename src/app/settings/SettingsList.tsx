@@ -12,11 +12,13 @@ interface SettingsListProps {
 
 export function SettingsList({ settings }: SettingsListProps) {
     const [theme, setLocalTheme] = useState(settings.theme);
+    const [localSettings, setLocalSettings] = useState(settings);
     const [saveNote, setSaveNote] = useState<string | null>(null);
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const handleThemeChange = async (newTheme: 'cozy_light' | 'cozy_dark') => {
         setLocalTheme(newTheme);
+        setLocalSettings((prev) => ({ ...prev, theme: newTheme }));
         await setTheme(newTheme);
         flashSaved();
     };
@@ -58,20 +60,56 @@ export function SettingsList({ settings }: SettingsListProps) {
                 <SegmentedSetting
                     label="通知"
                     description="每日提醒"
-                    currentValue={settings.notifications ? 'on' : 'off'}
+                    currentValue={localSettings.notifications ? 'on' : 'off'}
                     options={[
-                        { label: '開啟', value: 'on', action: async () => { if (!settings.notifications) { await toggleNotifications(); flashSaved(); } } },
-                        { label: '關閉', value: 'off', action: async () => { if (settings.notifications) { await toggleNotifications(); flashSaved(); } } }
+                        {
+                            label: '開啟',
+                            value: 'on',
+                            action: async () => {
+                                if (!localSettings.notifications) {
+                                    await toggleNotifications();
+                                    setLocalSettings((prev) => ({ ...prev, notifications: true }));
+                                    flashSaved();
+                                }
+                            }
+                        },
+                        {
+                            label: '關閉',
+                            value: 'off',
+                            action: async () => {
+                                if (localSettings.notifications) {
+                                    await toggleNotifications();
+                                    setLocalSettings((prev) => ({ ...prev, notifications: false }));
+                                    flashSaved();
+                                }
+                            }
+                        }
                     ]}
                 />
 
                 <SegmentedSetting
                     label="單位"
                     description="測量標準"
-                    currentValue={settings.units}
+                    currentValue={localSettings.units}
                     options={[
-                        { label: '公制 (kg)', value: 'metric', action: async () => { await setUnits('metric'); flashSaved(); } },
-                        { label: '英制 (lb)', value: 'imperial', action: async () => { await setUnits('imperial'); flashSaved(); } }
+                        {
+                            label: '公制 (kg)',
+                            value: 'metric',
+                            action: async () => {
+                                await setUnits('metric');
+                                setLocalSettings((prev) => ({ ...prev, units: 'metric' }));
+                                flashSaved();
+                            }
+                        },
+                        {
+                            label: '英制 (lb)',
+                            value: 'imperial',
+                            action: async () => {
+                                await setUnits('imperial');
+                                setLocalSettings((prev) => ({ ...prev, units: 'imperial' }));
+                                flashSaved();
+                            }
+                        }
                     ]}
                 />
             </section>
@@ -98,10 +136,26 @@ export function SettingsList({ settings }: SettingsListProps) {
                 <SegmentedSetting
                     label="隱私設定"
                     description="數據可見度"
-                    currentValue={settings.privacy}
+                    currentValue={localSettings.privacy}
                     options={[
-                        { label: '公開', value: 'public', action: async () => { await setPrivacy('public'); flashSaved('已更新，立即生效'); } },
-                        { label: '私人', value: 'private', action: async () => { await setPrivacy('private'); flashSaved('已更新，立即生效'); } }
+                        {
+                            label: '公開',
+                            value: 'public',
+                            action: async () => {
+                                await setPrivacy('public');
+                                setLocalSettings((prev) => ({ ...prev, privacy: 'public' }));
+                                flashSaved('已更新，立即生效');
+                            }
+                        },
+                        {
+                            label: '私人',
+                            value: 'private',
+                            action: async () => {
+                                await setPrivacy('private');
+                                setLocalSettings((prev) => ({ ...prev, privacy: 'private' }));
+                                flashSaved('已更新，立即生效');
+                            }
+                        }
                     ]}
                 />
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '-0.5rem' }}>
