@@ -29,23 +29,11 @@ export const getCachedGameStateBefore = cache((date: string) => getGameStateBefo
 
 // Dashboard (Heavy query)
 export const getCachedDashboard = cache(async (date: string) => {
-    const uid = await getViewerId();
-    const cached = unstable_cache(
-        () => getDashboardViewModel(date),
-        ['dashboard', uid ?? 'anon', date],
-        { revalidate: 30, tags: [dashboardTagForDate(uid, date)] }
-    );
-    return cached();
+    return await getDashboardViewModel(date);
 });
 
 export const getCachedDailyLogs = cache(async (date: string) => {
-    const uid = await getViewerId();
-    const cached = unstable_cache(
-        () => getDailyLogs(date),
-        ['dailylogs', uid ?? 'anon', date],
-        { revalidate: 30, tags: [dailyLogsTagForDate(uid, date)] }
-    );
-    return cached();
+    return await getDailyLogs(date);
 });
 
 // History Data
