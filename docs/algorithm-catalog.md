@@ -54,6 +54,12 @@ Algorithm Catalog 負責定義：
 - 反映長期狀態
 - 與健康事實無直接等價關係
 
+### 2.4 Projection Metrics（預測型指標）
+- 基於當前狀態與目標預測未來
+- 用於輔助決策與規劃
+- 不影響遊戲化判定
+
+
 ---
 
 ## 3. 指標定義強制格式（Mandatory Definition Schema）
@@ -268,6 +274,149 @@ net_calories = calories_in − calories_out
 **限制**
 - 不可回算
 - 不可被 metrics 影響
+
+---
+
+## 5.9 Layer 5: Projection Metrics (預測層)
+
+---
+
+### 5.9.1 `tdee`（Total Daily Energy Expenditure）
+
+- category: projection  
+- unit: kcal_day  
+- input_sources: metrics, user_profile  
+- required_inputs:
+  - bmr
+  - user_profile.activity_level  
+- algorithm_version: 1.0.0  
+- calculation_frequency: daily  
+
+**定義**  
+使用者每日總能量消耗，包含基礎代謝與活動消耗。
+
+**計算規則**  
+TDEE = BMR × Activity_Multiplier
+
+Activity_Multiplier:
+- sedentary: 1.2
+- light: 1.375
+- moderate: 1.55
+- active: 1.725
+- very_active: 1.9
+
+**邊界處理**
+- BMR 為 null → 輸出 null
+- activity_level 未定義 → 使用 sedentary (1.2)
+
+---
+
+### 5.9.2 `lbm`（Lean Body Mass）
+
+- category: projection  
+- unit: kg  
+- input_sources: metrics, raw_logs  
+- required_inputs: weight_kg  
+- optional_inputs: body_fat_percent  
+- algorithm_version: 1.0.0  
+- calculation_frequency: daily  
+
+**定義**  
+去脂體重，即體重中非脂肪組織的重量。
+
+**計算規則**  
+LBM = Weight × (1 - Body_Fat_Percent)
+
+**邊界處理**
+- body_fat_percent 缺失時使用預設值：
+  - 女性: 28%
+  - 男性: 20%
+- weight_kg 為 null → 輸出 null
+
+---
+
+### 5.9.3 `min_intake`（Minimum Safe Calorie Intake）
+
+- category: projection  
+- unit: kcal_day  
+- input_sources: metrics, user_profile  
+- required_inputs:
+  - weight_kg
+  - bmr
+  - user_profile.sex  
+- optional_inputs: body_fat_percent  
+- algorithm_version: 2.0.0  
+- calculation_frequency: daily  
+
+**定義**  
+最低安全熱量攝入，低於此值可能導致健康風險。
+
+**計算規則**  
+- **女性**: LBM × 30 kcal/day（低於此數值會導致下視丘閉經 FHA）
+- **男性**: BMR（不得低於基礎代謝率）
+
+**健康約束**  
+此數值為安全底線，任何減重計畫不得低於此攝入量。
+
+**邊界處理**
+- BMR 為 null → 輸出 null
+- 女性：body_fat_percent 缺失時使用預設值 28%
+- 男性：直接使用 BMR，不需要 body_fat_percent
+- sex 未定義 → 使用女性標準（更嚴格）
+
+---
+
+### 5.9.4 `goal_projection`（Goal Achievement Timeline）
+
+- category: projection  
+- unit: composite (days + date + kcal)  
+- input_sources: metrics, user_profile  
+- required_inputs:
+  - weight_kg (current)
+  - target_weight_kg
+  - bmr
+  - activity_level
+  - sex  
+- optional_inputs: body_fat_percent  
+- algorithm_version: 1.0.0  
+- calculation_frequency: daily  
+
+**定義**  
+基於當前狀態與安全熱量缺口，預測達成目標體重的時間線。
+
+**計算規則**  
+1. 計算 TDEE
+2. 計算 LBM 與 min_intake
+3. 計算安全每日缺口 = TDEE - min_intake（純粹基於生理學底線）
+4. 計算所需總熱量缺口 = (current_weight - target_weight) × 7700
+5. 計算天數 = 總熱量缺口 ÷ 每日缺口
+6. 計算目標日期 = 今日 + 天數
+
+**物理定律與生理學約束**  
+- 1 kg 脂肪組織 ≈ 7700 kcal 能量缺口
+- 安全底線由生理學決定：
+  - 女性：LBM × 30 kcal（防止下視丘閉經）
+  - 男性：BMR（不得低於基礎代謝）
+
+**輸出欄位**
+- days_to_goal: integer
+- target_date: string (YYYY-MM-DD)
+- daily_deficit: integer (kcal)
+- min_intake_floor: integer (kcal)
+- tdee: integer (kcal)
+- is_achievable: boolean
+- warning: string | null
+
+**邊界處理**
+- 任一 required_input 缺失 → is_achievable = false
+- current_weight <= target_weight → days_to_goal = 0
+- TDEE <= min_intake → is_achievable = false, warning 提示增加活動
+
+**架構限制**
+- 僅用於輔助決策與顯示
+- 不影響任務判定或遊戲化機制
+- 不可回寫至歷史狀態
+
 
 ---
 

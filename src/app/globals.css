@@ -1,42 +1,228 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* --- Palette: Cozy Pixel (Light Mode) --- */
+
+  /* Backgrounds: Warm Paper */
+  --bg-app: #F2EFE9;
+  /* The main warm beige background */
+  --bg-surface: #FFFFFF;
+  /* Pure white cards */
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #FAFAF8;
+
+  /* Text: Soft Contrast */
+  --text-primary: #4A4A45;
+  /* Soft Charcoal */
+  --text-secondary: #858580;
+  /* Warm Grey */
+  --text-tertiary: #B0B0A8;
+  /* Light Stone */
+
+  /* Accents: Sage & Earth */
+  --brand: #7FA085;
+  --accent: #7FA085;
+  /* Sage Green from image */
+  --accent-glow: rgba(127, 160, 133, 0.15);
+
+  --success: #7FA085;
+  --error: #D69F8E;
+  /* Muted Terracotta */
+
+  /* Surface Texture */
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: transparent;
+  /* Clean white look usually doesn't need borders */
+  --glass-blur: 10px;
+
+  /* Form */
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 32px;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-sans: var(--font-sans), system-ui, sans-serif;
+
+  /* Shadows */
+  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root[data-theme='cozy_dark'] {
+  /* --- Palette: Pixel Night (Dark Mode) --- */
+
+  /* Backgrounds: Deep & Matte */
+  --bg-app: #121212;
+  --bg-surface: #1C1C1E;
+  --bg-card: #2C2C2E;
+  --bg-card-hover: #3A3A3C;
+
+  /* Text: High Legibility */
+  --text-primary: #F2F2F7;
+  --text-secondary: #AEAEB2;
+  --text-tertiary: #636366;
+
+  /* Accents: Glowing Sage */
+  --brand: #8FBC9B;
+  --accent: #8FBC9B;
+  --accent-glow: rgba(143, 188, 155, 0.25);
+
+  --success: #8FBC9B;
+  --error: #FF6961;
+
+  /* Glass / Materials */
+  --glass-bg: rgba(30, 30, 30, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: 12px;
+
+  /* Shadows (Heavier for dark mode depth) */
+  --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
-html,
 body {
-  max-width: 100vw;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  padding: 0;
+  margin: 0;
   overflow-x: hidden;
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* --- Utilities --- */
+
+.text-gradient {
+  /* Alo uses stark white, but let's keep a subtle silver gradient for depth */
+  background: linear-gradient(135deg, #FFF 0%, #A1A1A6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+/* Premium Card (Apple Widget Style) */
+.glass-panel {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  /* No border by default for cleaner look, or very subtle */
+  /* border: 1px solid var(--glass-border); */
+  /* box-shadow: 0 4px 24px rgba(0,0,0,0.2); */
+  transition: transform 0.2s ease, background 0.2s ease;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/* Interactive elements get scale */
+.glass-panel-interactive:active {
+  transform: scale(0.98);
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+/* --- Animations --- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+section {
+  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom Scrollbar (Hidden mostly) */
+::-webkit-scrollbar {
+  width: 0px;
+}
+
+/* Inputs (Alo Style: Minimalist Underline or filled pill) */
+input {
+  appearance: none;
+  background: var(--bg-surface);
+  border: 1px solid transparent;
+  color: var(--text-primary);
+  font-family: inherit;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+input:focus {
+  background: #2C2C2E;
+  border-color: var(--text-secondary);
+}
+
+/* Buttons (Apple Style: Bold, Pill) */
+button {
+  font-family: inherit;
+  letter-spacing: -0.01em;
+  transition: transform 0.1s ease, opacity 0.2s ease;
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+/* Prevent iOS text zoom on focus */
+@media screen and (max-width: 768px) {
+
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Premium Icon Button */
+.premium-icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  /* Soft square/squircle */
+  background: var(--bg-surface);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  color: var(--text-primary);
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-icon-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 100%);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.premium-icon-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  color: #000;
+  background: #fff;
+}
+
+.premium-icon-btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.premium-icon-btn svg {
+  width: 20px;
+  height: 20px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.premium-icon-btn:hover svg {
+  opacity: 1;
 }

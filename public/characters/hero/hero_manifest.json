@@ -1,0 +1,13 @@
+{
+    "frameWidth": 128,
+    "frameHeight": 128,
+    "frameCount": 8,
+    "fpsWalk": 8,
+    "baselineY": 120,
+    "idleFrameIndex": 0,
+    "assets": {
+        "idle": "/characters/hero/hero_idle.png",
+        "walkRight": "/characters/hero/hero_walk_right.png",
+        "walkLeft": "/characters/hero/hero_walk_left.png"
+    }
+}
